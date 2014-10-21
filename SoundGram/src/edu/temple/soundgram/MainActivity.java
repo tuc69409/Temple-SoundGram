@@ -1,7 +1,12 @@
 package edu.temple.soundgram;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.URL;
+import java.net.URLConnection;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -24,6 +29,7 @@ import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.provider.MediaStore;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -137,15 +143,52 @@ public class MainActivity extends Activity {
 				
 				@Override
 				public void onClick(View v) {
-					MediaPlayer mPlayer = new MediaPlayer();
-			        try {
-			            mPlayer.setDataSource(audio.toString());
-			            mPlayer.prepare();
-			            mPlayer.start();
-			        } catch (IOException e) {
-			            e.printStackTrace();
-			        }
-					
+
+					File cacheFile = new File(Environment.getExternalStorageDirectory() + "/" + getString(R.string.app_name) + "/cache/" + audio.getName());		
+					Log.i("Cache","Test Start.");
+					if(cacheFile.exists()) {
+						playAudioClip(cacheFile);
+						Log.i("Cache","Exists in Cache. Played from Cache.");
+					}
+					else
+					{
+						Log.i("Cache","Downloading Audio file from URL.");
+						Thread t = new Thread() {
+							
+							@Override
+							public void run() {
+								
+								try {
+									URL url;
+								
+									url = new URL(audio.getAbsolutePath());
+
+									URLConnection connection = url.openConnection();
+									
+									InputStream input =  connection.getInputStream();;
+									byte[] buffer = new byte[4096];
+									int n = - 1;
+									
+									File file = new File(Environment.getExternalStorageDirectory() + "/" + getString(R.string.app_name) + "/cache/" + audio.getName());
+
+									OutputStream output = new FileOutputStream(file);
+									while ( (n = input.read(buffer)) > 0)
+									{
+									        output.write(buffer, 0, n);
+									}
+									output.flush();
+									output.close();
+									
+									playAudioClip(file);
+
+								} catch (IOException e) {
+									e.printStackTrace();
+								}
+							}
+						};
+						
+						t.start();
+					}
 				}
 			});
 			
@@ -154,6 +197,17 @@ public class MainActivity extends Activity {
 			uploadSoundGram();
 		}
 		
+	}
+	
+	private void playAudioClip(File audioFile) {
+		MediaPlayer mPlayer = new MediaPlayer();
+        try {
+            mPlayer.setDataSource(audioFile.toString());
+            mPlayer.prepare();
+            mPlayer.start();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 	}
 	
 	private void getAudioClip(){

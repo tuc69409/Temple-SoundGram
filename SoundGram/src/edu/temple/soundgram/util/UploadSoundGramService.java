@@ -48,7 +48,10 @@ public class UploadSoundGramService extends IntentService {
 			
 				// Delete local copy
 				deleteRecursive(new File(intent.getStringExtra(directory)));
+				//Clears cache directory
+				deleteTempData(new File(intent.getStringExtra(audio)));
 			}
+			
 			
 			//Broadcast completion to refresh streams.
 			Intent refreshIntent = new Intent().setAction(REFRESH_ACTION);
@@ -58,6 +61,10 @@ public class UploadSoundGramService extends IntentService {
 		} catch (Exception e){
 			e.printStackTrace();
 		}
+	}
+
+	public static void deleteTempData(File file){
+		file.delete();	
 	}
 	
 	public static void deleteRecursive(File fileOrDirectory) {
