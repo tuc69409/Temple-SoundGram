@@ -47,7 +47,7 @@ public class UploadSoundGramService extends IntentService {
 						MainActivity.class.getName());
 			
 				// Delete local copy
-				deleteRecursive(new File(intent.getStringExtra(directory)));
+		//		deleteRecursive(new File(intent.getStringExtra(directory)));
 				//Clears cache directory
 				deleteTempData(new File(intent.getStringExtra(audio)));
 			}
